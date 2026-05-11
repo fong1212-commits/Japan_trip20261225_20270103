@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-2027 跨年之旅</title>
+    <style>
+        :root {
+            --tokyo-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --sendai-gradient: linear-gradient(135deg, #2af598 0%, #009efd 100%);
+            --bg: #f8f9fa;
+            --text: #2d3436;
+        }
+
+        body {
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: env(safe-area-inset-top) 15px 40px 15px;
+        }
+
+        .header { text-align: center; padding: 30px 0; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
+
+        .page { display: none; max-width: 600px; margin: auto; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .trip-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-left: 8px solid transparent;
+            transition: transform 0.2s;
+        }
+        .trip-card:active { transform: scale(0.98); }
+
+        .card-tokyo { border-left-color: #764ba2; }
+        .card-sendai { border-left-color: #009efd; }
+
+        .card-date { font-size: 18px; font-weight: bold; color: #636e72; }
+        .card-hotel { font-size: 14px; color: #0984e3; margin: 5px 0; font-weight: 500; }
+        .card-summary { font-size: 16px; margin: 10px 0; color: #2d3436; min-height: 24px; }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #dfe6e9;
+            margin-top: 5px;
+            width: fit-content;
+        }
+        .badge-jr { background: #ffeaa7; color: #d63031; }
+
+        .btn-view {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f1f2f6;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .detail-header {
+            background: white;
+            position: sticky;
+            top: 0;
+            padding: 20px 0;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #f1f2f6;
+        }
+        .time { width: 60px; font-weight: bold; color: #b2bec3; font-size: 14px; padding-top: 2px; }
+        .event { flex: 1; outline: none; font-size: 16px; min-height: 24px; white-space: pre-wrap; }
+
+        .back-btn {
+            background: var(--text);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="homePage" class="page active">
+        <div class="header">
+            <h1>🇯🇵 2026 跨年之旅</h1>
+            <p style="color:#b2bec3; font-size:14px;">點擊右側箭頭進入詳情</p>
+        </div>
+        <div id="cardList"></div>
+    </div>
+
+    <div id="detailPage" class="page">
+        <div class="detail-header">
+            <h2 id="detailTitle" style="margin:0; font-size:20px;">詳細行程</h2>
+            <p id="detailHotel" style="margin:5px 0 0 0; color:#0984e3; font-size:14px;"></p>
+        </div>
+        <div id="timelineList"></div>
+        <button class="back-btn" onclick="showHome()">← 回到總覽表</button>
+    </div>
+
+<script>
+    // 資料配置區：已根據您的需求更新里士滿飯店與交通
+    const config = [
+        { d: "12/25 (五)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false, 
+          info: "抵達成田機場後，搭乘「京成 SKYACCESS」直達押上站。" },
+        { d: "12/26 (六)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
+        { d: "12/27 (日)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
+        { d: "12/28 (一)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
+        { d: "12/29 (二)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
+        { d: "12/30 (三)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: true,
+          info: "從押上站 B3 出口走路 1 分鐘即可抵達飯店。" },
+        { d: "12/31 (四)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false },
+        { d: "01/01 (五)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false },
+        { d: "01/02 (六)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false },
+        { d: "01/03 (日)", h: "桃園機場", loc: "tokyo", jr: false,
+          info: "回程同樣可從押上站搭乘「京成 SKYACCESS」直達成田機場。" }
+    ];
+
+    let tripData = JSON.parse(localStorage.getItem('tripData_v4')) || {};
+
+    function init() {
+        config.forEach(item => {
+            if (!tripData[item.d]) {
+                tripData[item.d] = { 
+                    summary: item.info || "點此輸入今日重點", 
+                    hotel: item.h,
+                    details: {} 
+                };
+                for (let h = 6; h <= 23; h++) {
+                    tripData[item.d].details[`${h < 10 ? '0' + h : h}:00`] = "";
+                }
+            } else {
+                // 強制更新飯店名稱，確保飯店資訊正確
+                tripData[item.d].hotel = item.h;
+                if (item.info && tripData[item.d].summary === "點此輸入今日重點") {
+                    tripData[item.d].summary = item.info;
+                }
+            }
+        });
+        renderHome();
+    }
+
+    function renderHome() {
+        const list = document.getElementById('cardList');
+        list.innerHTML = '';
+        config.forEach(item => {
+            const data = tripData[item.d];
+            const card = document.createElement('div');
+            card.className = `trip-card card-${item.loc}`;
+            card.innerHTML = `
+                <div class="card-date">${item.d}</div>
+                <div class="card-hotel">🏨 ${data.hotel}</div>
+                <div class="card-summary" contenteditable="true" oninput="saveSummary('${item.d}', this)">${data.summary}</div>
+                ${item.jr ? '<div class="badge badge-jr">🎫 東北 JR PASS</div>' : '<div class="badge">🚶 市區行程</div>'}
+                <button class="btn-view" onclick="showDetail('${item.d}')">❯</button>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function showDetail(date) {
+        document.getElementById('homePage').classList.remove('active');
+        document.getElementById('detailPage').classList.add('active');
+        document.getElementById('detailTitle').innerText = date;
+        document.getElementById('detailHotel').innerText = "🏨 " + tripData[date].hotel;
+
+        const list = document.getElementById('timelineList');
+        list.innerHTML = '';
+        const details = tripData[date].details;
+        Object.keys(details).sort().forEach(time => {
+            const row = document.createElement('div');
+            row.className = 'timeline-item';
+            row.innerHTML = `
+                <div class="time">${time}</div>
+                <div class="event" contenteditable="true" oninput="saveDetail('${date}', '${time}', this)">${details[time]}</div>
+            `;
+            list.appendChild(row);
+        });
+        window.scrollTo(0,0);
+    }
+
+    function showHome() {
+        document.getElementById('detailPage').classList.remove('active');
+        document.getElementById('homePage').classList.add('active');
+        renderHome();
+    }
+
+    function saveSummary(d, el) { tripData[d].summary = el.innerText; sync(); }
+    function saveDetail(d, t, el) { tripData[d].details[t] = el.innerText; sync(); }
+    function sync() { localStorage.setItem('tripData_v4', JSON.stringify(tripData)); }
+
+    init();
+</script>
+</body>
+</html>
