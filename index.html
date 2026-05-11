@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026-2027 跨年之旅｜現代化模板</title>
+    <title>2026-2027 跨年之旅｜航班整合版</title>
     <style>
         :root {
             --tokyo-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --sendai-gradient: linear-gradient(135deg, #2af598 0%, #009efd 100%);
+            --flight-bg: #1e3799;
             --bg: #f8f9fa;
             --text: #2d3436;
         }
@@ -20,8 +21,21 @@
             padding: env(safe-area-inset-top) 15px 40px 15px;
         }
 
-        .header { text-align: center; padding: 30px 0; }
-        .header h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
+        .header { text-align: center; padding: 20px 0; }
+        
+        /* 航班看板 */
+        .flight-board {
+            background: var(--flight-bg);
+            color: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .flight-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; opacity: 0.9; }
+        .flight-main { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 10px; }
+        .airport-code { font-size: 22px; font-weight: 800; letter-spacing: 1px; }
+        .flight-no { font-size: 14px; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; }
 
         /* 主頁面卡片流 */
         .page { display: none; max-width: 600px; margin: auto; }
@@ -33,88 +47,64 @@
             background: white;
             border-radius: 16px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             position: relative;
             border-left: 8px solid transparent;
-            transition: transform 0.2s;
         }
-        .trip-card:active { transform: scale(0.98); }
-
         .card-tokyo { border-left-color: #764ba2; }
         .card-sendai { border-left-color: #009efd; }
-
         .card-date { font-size: 18px; font-weight: bold; color: #636e72; }
         .card-hotel { font-size: 14px; color: #0984e3; margin: 5px 0; font-weight: 500; }
-        .card-summary { font-size: 16px; margin: 10px 0; color: #2d3436; min-height: 24px; }
+        .card-summary { font-size: 16px; margin: 10px 0; color: #2d3436; }
         
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            background: #dfe6e9;
-            margin-top: 5px;
-            width: fit-content;
-        }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; background: #dfe6e9; width: fit-content; }
         .badge-jr { background: #ffeaa7; color: #d63031; }
 
         .btn-view {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #f1f2f6;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            background: #f1f2f6; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px;
         }
 
         /* 詳細頁面 */
-        .detail-header {
-            background: white;
-            position: sticky;
-            top: 0;
-            padding: 20px 0;
-            z-index: 10;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
-        }
-
-        .timeline-item {
-            display: flex;
-            padding: 15px 0;
-            border-bottom: 1px solid #f1f2f6;
-        }
-        .time { width: 60px; font-weight: bold; color: #b2bec3; font-size: 14px; padding-top: 2px; }
-        .event { flex: 1; outline: none; font-size: 16px; min-height: 24px; }
+        .detail-header { background: white; position: sticky; top: 0; padding: 20px 0; z-index: 10; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+        .timeline-item { display: flex; padding: 15px 0; border-bottom: 1px solid #f1f2f6; }
+        .time { width: 60px; font-weight: bold; color: #b2bec3; font-size: 14px; }
+        .event { flex: 1; outline: none; font-size: 16px; min-height: 24px; color: #2d3436; }
         .event:focus { color: #0984e3; }
-
-        .back-btn {
-            background: var(--text);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 12px;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 30px;
-        }
+        .back-btn { background: #2d3436; color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; margin-top: 30px; }
     </style>
 </head>
 <body>
 
     <div id="homePage" class="page active">
         <div class="header">
-            <h1>🇯🇵 2026 日本聖誕節跨年之旅</h1>
-            <p style="color:#b2bec3; font-size:14px;">點擊卡片編輯摘要或進入詳情</p>
+            <h1>2026-2027 跨年之旅</h1>
         </div>
+
+        <div class="flight-board">
+            <div style="font-size: 12px; margin-bottom: 10px; font-weight: bold;">✈️ 航班摘要</div>
+            <div class="flight-row"><span>12/25 (五)</span> <span>T1 報到</span></div>
+            <div class="flight-main">
+                <div class="airport-code">TPE</div>
+                <div class="flight-no">酷航 TR898</div>
+                <div class="airport-code">NRT</div>
+            </div>
+            <div class="flight-row"><span>06:40 起飛</span> <span>10:40 抵達</span></div>
+            
+            <div style="margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 10px;"></div>
+            
+            <div class="flight-row"><span>01/03 (日)</span> <span>T2 報到</span></div>
+            <div class="flight-main">
+                <div class="airport-code">NRT</div>
+                <div class="flight-no">華航 CI101</div>
+                <div class="airport-code">TPE</div>
+            </div>
+            <div class="flight-row"><span>14:35 起飛</span> <span>17:45 抵達</span></div>
+        </div>
+
         <div id="cardList"></div>
     </div>
 
@@ -138,21 +128,32 @@
         { d: "12/31 (四)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
         { d: "01/01 (五)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
         { d: "01/02 (六)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
-        { d: "01/03 (日)", h: "桃園機場", loc: "tokyo", jr: false }
+        { d: "01/03 (日)", h: "回台灣", loc: "tokyo", jr: false }
     ];
 
-    let tripData = JSON.parse(localStorage.getItem('tripData_v4')) || {};
+    let tripData = JSON.parse(localStorage.getItem('tripData_v5')) || {};
 
     function init() {
         config.forEach(item => {
             if (!tripData[item.d]) {
-                tripData[item.d] = { 
-                    summary: "點此輸入今日重點", 
-                    hotel: item.h,
-                    details: {} 
-                };
+                tripData[item.d] = { summary: "點此編輯摘要", hotel: item.h, details: {} };
                 for (let h = 6; h <= 23; h++) {
-                    tripData[item.d].details[`${h < 10 ? '0' + h : h}:00`] = "";
+                    let timeKey = `${h < 10 ? '0' + h : h}:00`;
+                    let presetValue = "";
+                    
+                    // 預填航班資訊
+                    if (item.d === "12/25 (五)") {
+                        if (h === 6) presetValue = "✈️ 酷航 TR 898 起飛 (TPE T1)";
+                        if (h === 10) presetValue = "🛬 抵達成田機場 (NRT T1)";
+                        if (h === 11) presetValue = "🚉 搭乘 Skyliner 前往市區";
+                    }
+                    if (item.d === "01/03 (日)") {
+                        if (h === 12) presetValue = "🚌 前往成田機場 (T2 報到)";
+                        if (h === 14) presetValue = "✈️ 華航 CI101 起飛";
+                        if (h === 17) presetValue = "🛬 抵達桃園機場 (TPE T2)";
+                    }
+                    
+                    tripData[item.d].details[timeKey] = presetValue;
                 }
             }
         });
@@ -170,7 +171,7 @@
                 <div class="card-date">${item.d}</div>
                 <div class="card-hotel" contenteditable="true" oninput="saveHotel('${item.d}', this)">🏨 ${data.hotel}</div>
                 <div class="card-summary" contenteditable="true" oninput="saveSummary('${item.d}', this)">${data.summary}</div>
-                ${item.jr ? '<div class="badge badge-jr">🎫 東北 JR PASS</div>' : '<div class="badge">🚶 市區行程</div>'}
+                ${item.jr ? '<div class="badge badge-jr">🎫 JR PASS 東北</div>' : '<div class="badge">🗼 東京行程</div>'}
                 <button class="btn-view" onclick="showDetail('${item.d}')">❯</button>
             `;
             list.appendChild(card);
@@ -207,7 +208,7 @@
     function saveHotel(d, el) { tripData[d].hotel = el.innerText.replace('🏨 ', ''); sync(); }
     function saveSummary(d, el) { tripData[d].summary = el.innerText; sync(); }
     function saveDetail(d, t, el) { tripData[d].details[t] = el.innerText; sync(); }
-    function sync() { localStorage.setItem('tripData_v4', JSON.stringify(tripData)); }
+    function sync() { localStorage.setItem('tripData_v5', JSON.stringify(tripData)); }
 
     init();
 </script>
