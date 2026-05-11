@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026-2027 跨年之旅</title>
+    <title>2026-2027 跨年之旅｜現代化模板</title>
     <style>
         :root {
             --tokyo-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -23,6 +23,7 @@
         .header { text-align: center; padding: 30px 0; }
         .header h1 { margin: 0; font-size: 24px; letter-spacing: 2px; }
 
+        /* 主頁面卡片流 */
         .page { display: none; max-width: 600px; margin: auto; }
         .page.active { display: block; animation: fadeIn 0.3s ease; }
 
@@ -75,6 +76,7 @@
             font-size: 18px;
         }
 
+        /* 詳細頁面 */
         .detail-header {
             background: white;
             position: sticky;
@@ -91,7 +93,8 @@
             border-bottom: 1px solid #f1f2f6;
         }
         .time { width: 60px; font-weight: bold; color: #b2bec3; font-size: 14px; padding-top: 2px; }
-        .event { flex: 1; outline: none; font-size: 16px; min-height: 24px; white-space: pre-wrap; }
+        .event { flex: 1; outline: none; font-size: 16px; min-height: 24px; }
+        .event:focus { color: #0984e3; }
 
         .back-btn {
             background: var(--text);
@@ -110,7 +113,7 @@
     <div id="homePage" class="page active">
         <div class="header">
             <h1>🇯🇵 2026 跨年之旅</h1>
-            <p style="color:#b2bec3; font-size:14px;">點擊右側箭頭進入詳情</p>
+            <p style="color:#b2bec3; font-size:14px;">點擊卡片編輯摘要或進入詳情</p>
         </div>
         <div id="cardList"></div>
     </div>
@@ -125,21 +128,17 @@
     </div>
 
 <script>
-    // 資料配置區：已根據您的需求更新里士滿飯店與交通
     const config = [
-        { d: "12/25 (五)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false, 
-          info: "抵達成田機場後，搭乘「京成 SKYACCESS」直達押上站。" },
+        { d: "12/25 (五)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
         { d: "12/26 (六)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
         { d: "12/27 (日)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
         { d: "12/28 (一)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
         { d: "12/29 (二)", h: "Hotel Metropolitan Sendai East", loc: "sendai", jr: true },
-        { d: "12/30 (三)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: true,
-          info: "從押上站 B3 出口走路 1 分鐘即可抵達飯店。" },
-        { d: "12/31 (四)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false },
-        { d: "01/01 (五)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false },
-        { d: "01/02 (六)", h: "里士滿東京押上高級飯店", loc: "tokyo", jr: false },
-        { d: "01/03 (日)", h: "桃園機場", loc: "tokyo", jr: false,
-          info: "回程同樣可從押上站搭乘「京成 SKYACCESS」直達成田機場。" }
+        { d: "12/30 (三)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: true },
+        { d: "12/31 (四)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
+        { d: "01/01 (五)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
+        { d: "01/02 (六)", h: "Richmond Hotel Premier Tokyo Schole", loc: "tokyo", jr: false },
+        { d: "01/03 (日)", h: "桃園機場", loc: "tokyo", jr: false }
     ];
 
     let tripData = JSON.parse(localStorage.getItem('tripData_v4')) || {};
@@ -148,18 +147,12 @@
         config.forEach(item => {
             if (!tripData[item.d]) {
                 tripData[item.d] = { 
-                    summary: item.info || "點此輸入今日重點", 
+                    summary: "點此輸入今日重點", 
                     hotel: item.h,
                     details: {} 
                 };
                 for (let h = 6; h <= 23; h++) {
                     tripData[item.d].details[`${h < 10 ? '0' + h : h}:00`] = "";
-                }
-            } else {
-                // 強制更新飯店名稱，確保飯店資訊正確
-                tripData[item.d].hotel = item.h;
-                if (item.info && tripData[item.d].summary === "點此輸入今日重點") {
-                    tripData[item.d].summary = item.info;
                 }
             }
         });
@@ -175,7 +168,7 @@
             card.className = `trip-card card-${item.loc}`;
             card.innerHTML = `
                 <div class="card-date">${item.d}</div>
-                <div class="card-hotel">🏨 ${data.hotel}</div>
+                <div class="card-hotel" contenteditable="true" oninput="saveHotel('${item.d}', this)">🏨 ${data.hotel}</div>
                 <div class="card-summary" contenteditable="true" oninput="saveSummary('${item.d}', this)">${data.summary}</div>
                 ${item.jr ? '<div class="badge badge-jr">🎫 東北 JR PASS</div>' : '<div class="badge">🚶 市區行程</div>'}
                 <button class="btn-view" onclick="showDetail('${item.d}')">❯</button>
@@ -211,6 +204,7 @@
         renderHome();
     }
 
+    function saveHotel(d, el) { tripData[d].hotel = el.innerText.replace('🏨 ', ''); sync(); }
     function saveSummary(d, el) { tripData[d].summary = el.innerText; sync(); }
     function saveDetail(d, t, el) { tripData[d].details[t] = el.innerText; sync(); }
     function sync() { localStorage.setItem('tripData_v4', JSON.stringify(tripData)); }
